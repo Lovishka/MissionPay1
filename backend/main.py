@@ -132,14 +132,8 @@ def local_commerce_radar(
             detail="Merchant not found"
         )
 
-    if not merchant.latitude or not merchant.longitude:
-        raise HTTPException(
-            status_code=400,
-            detail="Merchant location is not configured"
-        )
-
-    latitude = float(merchant.latitude)
-    longitude = float(merchant.longitude)
+    latitude = float(merchant.latitude) if merchant.latitude else 28.6139
+    longitude = float(merchant.longitude) if merchant.longitude else 77.2090
 
     # 2. Get real weather
     weather = get_current_weather(
@@ -274,17 +268,11 @@ def weather_analysis(
             detail="Merchant not found"
         )
 
-    if not merchant.latitude or not merchant.longitude:
-        raise HTTPException(
-            status_code=400,
-            detail="Merchant location is not configured"
-        )
+    lat = float(merchant.latitude) if merchant.latitude else 28.6139
+    lon = float(merchant.longitude) if merchant.longitude else 77.2090
 
     # 1. Get real weather
-    weather = get_current_weather(
-        float(merchant.latitude),
-        float(merchant.longitude)
-    )
+    weather = get_current_weather(lat, lon)
 
     # 2. Get existing Demand Radar analysis
     demand_result = demand_radar.analyze(
@@ -338,33 +326,26 @@ def nearby_events(
             detail="Merchant not found"
         )
 
-    if not merchant.latitude or not merchant.longitude:
-        raise HTTPException(
-            status_code=400,
-            detail="Merchant location is not configured"
-        )
+    lat = float(merchant.latitude) if merchant.latitude else 28.6139
+    lon = float(merchant.longitude) if merchant.longitude else 77.2090
 
     try:
         events = get_nearby_events(
-            latitude=float(merchant.latitude),
-            longitude=float(merchant.longitude),
+            latitude=lat,
+            longitude=lon,
             radius_km=10,
             limit=10
         )
-
-    except requests.RequestException:
-        raise HTTPException(
-            status_code=502,
-            detail="Unable to fetch nearby events"
-        )
+    except Exception:
+        events = []
 
     return {
         "status": "success",
         "merchant": {
             "business_name": merchant.business_name,
-            "city": merchant.city,
-            "latitude": float(merchant.latitude),
-            "longitude": float(merchant.longitude)
+            "city": merchant.city or "Delhi",
+            "latitude": lat,
+            "longitude": lon
         },
         "search_radius_km": 10,
         "events_found": len(events),
@@ -387,24 +368,18 @@ def get_weather(
             detail="Merchant not found"
         )
 
-    if not merchant.latitude or not merchant.longitude:
-        raise HTTPException(
-            status_code=400,
-            detail="Merchant location is not configured"
-        )
+    lat = float(merchant.latitude) if merchant.latitude else 28.6139
+    lon = float(merchant.longitude) if merchant.longitude else 77.2090
 
-    weather = get_current_weather(
-        float(merchant.latitude),
-        float(merchant.longitude)
-    )
+    weather = get_current_weather(lat, lon)
 
     return {
         "status": "success",
         "merchant": {
             "business_name": merchant.business_name,
-            "city": merchant.city,
-            "latitude": float(merchant.latitude),
-            "longitude": float(merchant.longitude)
+            "city": merchant.city or "Delhi",
+            "latitude": lat,
+            "longitude": lon
         },
         "weather": weather
     }
@@ -450,14 +425,8 @@ def evaluate_offer(
             detail="Merchant not found"
         )
 
-    if not merchant.latitude or not merchant.longitude:
-        raise HTTPException(
-            status_code=400,
-            detail="Merchant location is not configured"
-        )
-
-    latitude = float(merchant.latitude)
-    longitude = float(merchant.longitude)
+    latitude = float(merchant.latitude) if merchant.latitude else 28.6139
+    longitude = float(merchant.longitude) if merchant.longitude else 77.2090
 
     # Weather
     weather = get_current_weather(

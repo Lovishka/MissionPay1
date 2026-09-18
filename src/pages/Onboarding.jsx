@@ -115,6 +115,58 @@ export default function Onboarding({ onComplete, onLogout }) {
     }
   };
 
+  const handleUseSampleSales = async () => {
+    const csvContent = `product_id,product_name,month,unit_sales,supply_time,quantity_on_hand,selling_price,cost_price,max_discount_percentage
+P101,Basmati Rice 5kg,2026-01,150,3,45,450,350,15
+P102,Refined Oil 1L,2026-01,320,2,20,130,105,12
+P103,Cold Drink 2L,2026-01,500,1,10,90,70,10
+P104,Ice Cream Pint,2026-01,210,2,15,250,180,20
+P105,Whole Wheat Atta 10kg,2026-01,95,4,30,380,310,10`;
+    const file = new File([csvContent], "sample_sales_data.csv", { type: "text/csv" });
+    setSalesFile(file);
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await uploadSalesData(file);
+      setSalesResult(data);
+      setStepCompleted((prev) => ({ ...prev, sales: true }));
+      setTimeout(() => setCurrentStep(1), 800);
+    } catch (err) {
+      setError(err.message || 'Failed to upload sales data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUseSampleEconomics = async () => {
+    const csvContent = `product_id,product_name,selling_price,cost_price,max_discount_percentage
+P101,Basmati Rice 5kg,450,350,15
+P102,Refined Oil 1L,130,105,12
+P103,Cold Drink 2L,90,70,10
+P104,Ice Cream Pint,250,180,20
+P105,Whole Wheat Atta 10kg,380,310,10`;
+    const file = new File([csvContent], "sample_economics.csv", { type: "text/csv" });
+    setEconomicsFile(file);
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await uploadProductEconomics(file);
+      setEconomicsResult(data);
+      setStepCompleted((prev) => ({ ...prev, economics: true }));
+      setTimeout(() => setCurrentStep(2), 800);
+    } catch (err) {
+      setError(err.message || 'Failed to upload product economics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickLocation = (cityName, lat, lon) => {
+    setCity(cityName);
+    setLatitude(lat.toString());
+    setLongitude(lon.toString());
+  };
+
   const steps = [
     { title: 'Sales Data', completed: stepCompleted.sales },
     { title: 'Product Economics', completed: stepCompleted.economics },
@@ -205,7 +257,18 @@ export default function Onboarding({ onComplete, onLogout }) {
 
               {!stepCompleted.sales ? (
                 <>
-                  <label className="group relative flex flex-col items-center justify-center w-full h-48 border-2 border-white/[0.08] border-dashed rounded-2xl cursor-pointer bg-[#08111D] hover:border-[#1683FF]/40 hover:bg-[#0F1D2D] transition-all">
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleUseSampleSales}
+                      disabled={loading}
+                      className="text-xs font-bold px-3 py-1.5 bg-[#1683FF]/15 text-[#2EA8FF] hover:bg-[#1683FF]/30 border border-[#1683FF]/30 rounded-xl transition flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" /> ⚡ Load Sample Sales CSV (Instant)
+                    </button>
+                  </div>
+
+                  <label className="group relative flex flex-col items-center justify-center w-full h-44 border-2 border-white/[0.08] border-dashed rounded-2xl cursor-pointer bg-[#08111D] hover:border-[#1683FF]/40 hover:bg-[#0F1D2D] transition-all">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-10 h-10 text-[#64748B] group-hover:text-[#2EA8FF] mb-3 transition-colors" />
                       <p className="mb-1 text-xs text-[#94A3B8]">
@@ -222,7 +285,7 @@ export default function Onboarding({ onComplete, onLogout }) {
                   </label>
 
                   {salesFile && (
-                    <div className="bg-[#08111D] border border-white/[0.08] p-4 rounded-2xl flex items-center justify-between">
+                    <div className="bg-[#08111D] border border-[#1683FF]/30 p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-[#1683FF]/10">
                       <div className="flex items-center gap-3 overflow-hidden">
                         <FileSpreadsheet className="w-5 h-5 text-[#1683FF] shrink-0" />
                         <span className="text-xs font-bold text-[#F5F8FC] truncate">{salesFile.name}</span>
@@ -231,9 +294,9 @@ export default function Onboarding({ onComplete, onLogout }) {
                       <button 
                         onClick={handleSalesUpload}
                         disabled={loading}
-                        className="bg-[#1683FF] hover:bg-[#2EA8FF] text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all disabled:opacity-50"
+                        className="bg-[#1683FF] hover:bg-[#2EA8FF] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all disabled:opacity-50 shadow-md shadow-[#1683FF]/20"
                       >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload File'}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload File & Advance →'}
                       </button>
                     </div>
                   )}
@@ -267,7 +330,18 @@ export default function Onboarding({ onComplete, onLogout }) {
 
               {!stepCompleted.economics ? (
                 <>
-                  <label className="group relative flex flex-col items-center justify-center w-full h-48 border-2 border-white/[0.08] border-dashed rounded-2xl cursor-pointer bg-[#08111D] hover:border-[#1683FF]/40 hover:bg-[#0F1D2D] transition-all">
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleUseSampleEconomics}
+                      disabled={loading}
+                      className="text-xs font-bold px-3 py-1.5 bg-[#1683FF]/15 text-[#2EA8FF] hover:bg-[#1683FF]/30 border border-[#1683FF]/30 rounded-xl transition flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" /> ⚡ Load Sample Economics CSV (Instant)
+                    </button>
+                  </div>
+
+                  <label className="group relative flex flex-col items-center justify-center w-full h-44 border-2 border-white/[0.08] border-dashed rounded-2xl cursor-pointer bg-[#08111D] hover:border-[#1683FF]/40 hover:bg-[#0F1D2D] transition-all">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-10 h-10 text-[#64748B] group-hover:text-[#2EA8FF] mb-3 transition-colors" />
                       <p className="mb-1 text-xs text-[#94A3B8]">
@@ -284,7 +358,7 @@ export default function Onboarding({ onComplete, onLogout }) {
                   </label>
 
                   {economicsFile && (
-                    <div className="bg-[#08111D] border border-white/[0.08] p-4 rounded-2xl flex items-center justify-between">
+                    <div className="bg-[#08111D] border border-[#1683FF]/30 p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-[#1683FF]/10">
                       <div className="flex items-center gap-3 overflow-hidden">
                         <FileSpreadsheet className="w-5 h-5 text-[#1683FF] shrink-0" />
                         <span className="text-xs font-bold text-[#F5F8FC] truncate">{economicsFile.name}</span>
@@ -293,9 +367,9 @@ export default function Onboarding({ onComplete, onLogout }) {
                       <button 
                         onClick={handleEconomicsUpload}
                         disabled={loading}
-                        className="bg-[#1683FF] hover:bg-[#2EA8FF] text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all disabled:opacity-50"
+                        className="bg-[#1683FF] hover:bg-[#2EA8FF] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all disabled:opacity-50 shadow-md shadow-[#1683FF]/20"
                       >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload File'}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload File & Advance →'}
                       </button>
                     </div>
                   )}
@@ -329,6 +403,30 @@ export default function Onboarding({ onComplete, onLogout }) {
 
               {!stepCompleted.location ? (
                 <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-bold text-[#94A3B8]">Quick Presets:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLocation("Delhi", 28.6139, 77.2090)}
+                      className="px-2.5 py-1 bg-[#08111D] hover:bg-[#1683FF]/20 border border-white/[0.08] hover:border-[#1683FF]/40 rounded-lg text-xs font-medium text-[#2EA8FF] transition"
+                    >
+                      📍 Delhi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLocation("Mumbai", 19.0760, 72.8777)}
+                      className="px-2.5 py-1 bg-[#08111D] hover:bg-[#1683FF]/20 border border-white/[0.08] hover:border-[#1683FF]/40 rounded-lg text-xs font-medium text-[#2EA8FF] transition"
+                    >
+                      📍 Mumbai
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLocation("Bengaluru", 12.9716, 77.5946)}
+                      className="px-2.5 py-1 bg-[#08111D] hover:bg-[#1683FF]/20 border border-white/[0.08] hover:border-[#1683FF]/40 rounded-lg text-xs font-medium text-[#2EA8FF] transition"
+                    >
+                      📍 Bengaluru
+                    </button>
+                  </div>
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[#94A3B8] mb-1.5">City</label>
                     <div className="relative">
