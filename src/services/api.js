@@ -193,27 +193,33 @@ export async function getProducts() {
 }
 
 export async function getWeather() {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Authentication token not found.");
-  const response = await fetch(`${API_URL}/api/radar/weather`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Failed to fetch weather");
-  return data;
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return { status: "unavailable", weather: null };
+    const response = await fetch(`${API_URL}/api/radar/weather`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) return { status: "unavailable", weather: null };
+    return await response.json();
+  } catch (e) {
+    return { status: "unavailable", weather: null };
+  }
 }
 
 export async function getEvents() {
-  const token = localStorage.getItem("token");
-  if (!token) throw new Error("Authentication token not found.");
-  const response = await fetch(`${API_URL}/api/radar/events`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.detail || "Failed to fetch events");
-  return data;
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return { status: "unavailable", events: [] };
+    const response = await fetch(`${API_URL}/api/radar/events`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) return { status: "unavailable", events: [] };
+    return await response.json();
+  } catch (e) {
+    return { status: "unavailable", events: [] };
+  }
 }
 
 export async function getLocalCommerce() {

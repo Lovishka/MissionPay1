@@ -1,0 +1,6 @@
+product_id,product_name,month,unit_sales,supply_time,quantity_on_hand,selling_price,cost_price,max_discount_percentage
+P101,Basmati Rice 5kg,2026-01,150,3,45,450,350,15
+P102,Refined Oil 1L,2026-01,320,2,20,130,105,12
+P103,Cold Drink 2L,2026-01,500,1,10,90,70,10
+P104,Ice Cream Pint,2026-01,210,2,15,250,180,20
+P105,Whole Wheat Atta 10kg,2026-01,95,4,30,380,310,10

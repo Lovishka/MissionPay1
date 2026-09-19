@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, Component } from "react";
 
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
@@ -10,6 +10,47 @@ import Approvals from "./pages/Approvals";
 import Execution from "./pages/Execution";
 import Onboarding from "./pages/Onboarding";
 import { getDataSummary } from "./services/api";
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#050A12] text-[#F5F8FC] flex flex-col items-center justify-center p-6 text-center font-inter">
+          <div className="w-16 h-16 rounded-2xl bg-[#EF4444]/15 border border-[#EF4444]/30 flex items-center justify-center text-[#EF4444] mb-4">
+            ⚠️
+          </div>
+          <h2 className="text-xl font-bold mb-2 text-[#F5F8FC]">Something went wrong</h2>
+          <p className="text-xs text-[#94A3B8] max-w-md mb-6">
+            {this.state.error?.message || "An unexpected UI error occurred."}
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            className="px-6 py-2.5 bg-[#1683FF] hover:bg-[#2EA8FF] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+          >
+            Refresh MissionPay
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -31,8 +72,13 @@ function App() {
     const checkSetup = async () => {
       setCheckingSetup(true);
       try {
-        const summary = await getDataSummary();
-        setNeedsOnboarding(!summary?.total_rows || summary.total_rows === 0);
+        const completedFlag = localStorage.getItem("onboarding_completed");
+        if (completedFlag === "true") {
+          setNeedsOnboarding(false);
+        } else {
+          // New or uncompleted merchant: force needsOnboarding true so they complete all 4 steps
+          setNeedsOnboarding(true);
+        }
       } catch (err) {
         if (err.message?.includes("Session expired") || err.message?.includes("token") || err.message?.includes("Unauthorized")) {
           handleLogout();
@@ -54,6 +100,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("merchant");
+    localStorage.removeItem("onboarding_completed");
 
     setIsLoggedIn(false);
     setMission(null);
@@ -90,7 +137,16 @@ function App() {
   }
 
   if (needsOnboarding) {
-    return <Onboarding onComplete={() => { setNeedsOnboarding(false); setActive("Dashboard"); }} onLogout={handleLogout} />;
+    return (
+      <Onboarding
+        onComplete={() => {
+          localStorage.setItem("onboarding_completed", "true");
+          setNeedsOnboarding(false);
+          setActive("Dashboard");
+        }}
+        onLogout={handleLogout}
+      />
+    );
   }
 
   return (
@@ -163,4 +219,10 @@ function App() {
   );
 }
 
-export default App;
+export default function WrappedApp() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+}

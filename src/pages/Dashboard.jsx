@@ -63,11 +63,12 @@ export default function Dashboard({ mission, evaluation, setActive }) {
       if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value)) {
         setProducts(prodRes.value);
       }
-      if (weatherRes.status === "fulfilled" && weatherRes.value && !weatherRes.value.detail) {
-        setWeather(weatherRes.value);
+      if (weatherRes.status === "fulfilled" && weatherRes.value && weatherRes.value.status !== "unavailable") {
+        setWeather(weatherRes.value.weather || weatherRes.value);
       }
-      if (eventsRes.status === "fulfilled" && Array.isArray(eventsRes.value)) {
-        setEvents(eventsRes.value);
+      if (eventsRes.status === "fulfilled" && eventsRes.value && eventsRes.value.status !== "unavailable") {
+        const evList = eventsRes.value.events || (Array.isArray(eventsRes.value) ? eventsRes.value : []);
+        setEvents(evList);
       }
       if (demandRes.status === "fulfilled") {
         setDemandRadar(demandRes.value);

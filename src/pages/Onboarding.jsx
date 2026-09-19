@@ -200,28 +200,33 @@ P105,Whole Wheat Atta 10kg,380,310,10`;
         <div className="flex items-center justify-between relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-[#0F1D2D] rounded-full z-0"></div>
           
-          {steps.map((step, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentStep(idx)}
-              className="relative z-10 flex flex-col items-center group cursor-pointer"
-            >
-              <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xs border transition-all ${
-                step.completed 
-                  ? 'bg-[#22C55E]/15 border-[#22C55E] text-[#22C55E]'
-                  : idx === currentStep 
-                    ? 'bg-[#1683FF] border-[#2EA8FF] text-white shadow-lg shadow-[#1683FF]/30 scale-105'
-                    : 'bg-[#0B1624] border-white/[0.08] text-[#64748B] group-hover:border-white/[0.2]'
-              }`}>
-                {step.completed ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
-              </div>
-              <span className={`absolute -bottom-6 text-[10px] uppercase font-bold tracking-wider whitespace-nowrap ${
-                idx === currentStep ? 'text-[#2EA8FF]' : step.completed ? 'text-[#22C55E]' : 'text-[#64748B]'
-              }`}>
-                {step.title}
-              </span>
-            </button>
-          ))}
+          {steps.map((step, idx) => {
+            const isDone = step.completed || idx < currentStep;
+            const isActive = idx === currentStep;
+
+            return (
+              <button
+                key={idx}
+                onClick={() => setCurrentStep(idx)}
+                className="relative z-10 flex flex-col items-center group cursor-pointer"
+              >
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-xs border transition-all ${
+                  isDone 
+                    ? 'bg-[#22C55E]/15 border-[#22C55E] text-[#22C55E]'
+                    : isActive 
+                      ? 'bg-[#1683FF] border-[#2EA8FF] text-white shadow-lg shadow-[#1683FF]/30 scale-105'
+                      : 'bg-[#0B1624] border-white/[0.08] text-[#64748B] group-hover:border-white/[0.2]'
+                }`}>
+                  {isDone ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
+                </div>
+                <span className={`absolute -bottom-6 text-[10px] uppercase font-bold tracking-wider whitespace-nowrap ${
+                  isActive ? 'text-[#2EA8FF]' : isDone ? 'text-[#22C55E]' : 'text-[#64748B]'
+                }`}>
+                  {step.title}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
