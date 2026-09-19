@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AlertCircle, Loader2, UserPlus, LogIn, Store, ShieldCheck } from "lucide-react";
 import { registerUser } from "../services/api";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 export default function Login({ onLogin }) {
   const [mode, setMode] = useState("login"); // "login" or "register"

@@ -1,4 +1,4 @@
-export const API_URL = "http://127.0.0.1:8000";
+export const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 export async function createMission(goal) {
   const token = localStorage.getItem("token");
@@ -413,4 +413,4 @@ export async function getLatestExecution() {
   const data = await response.json();
   if (!response.ok) throw new Error(data.detail || "Failed to fetch latest execution");
   return data;
-}
+}

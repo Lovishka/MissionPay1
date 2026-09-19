@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: missionpay-backend
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: missionpay-db
+          property: connectionString
+    autoDeploy: true
+
+  - type: web
+    name: missionpay-frontend
+    runtime: node
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: 18.0.0
+    autoDeploy: true
+
+databases:
+  - name: missionpay-db
+    databaseName: missionpay
+    user: missionpay
