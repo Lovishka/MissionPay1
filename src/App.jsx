@@ -169,6 +169,7 @@ function App() {
               mission={mission}
               evaluation={missionEvaluation}
               setActive={setActive}
+              onMissionCreated={handleMissionCreated}
             />
           )}
 

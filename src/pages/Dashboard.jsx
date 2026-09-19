@@ -16,8 +16,9 @@ import MissionCard from "../components/MissionCard";
 import AgentCard from "../components/AgentCard";
 import HackathonDemoBar from "../components/HackathonDemoBar";
 import StatusBadge from "../components/StatusBadge";
+import FestivalDemandRadar from "../components/FestivalDemandRadar";
 
-export default function Dashboard({ mission, evaluation, setActive }) {
+export default function Dashboard({ mission, evaluation, setActive, onMissionCreated }) {
   const [dataSummary, setDataSummary] = useState(null);
   const [salesHistory, setSalesHistory] = useState([]);
   const [agentActivities, setAgentActivities] = useState([]);
@@ -189,6 +190,15 @@ export default function Dashboard({ mission, evaluation, setActive }) {
           icon={Activity}
         />
       </div>
+
+      {/* Festival Demand Radar Section */}
+      <FestivalDemandRadar 
+        onCreateMission={(newMission) => {
+          if (onMissionCreated) onMissionCreated(newMission);
+          else setActive("Mission Control");
+        }}
+        setActive={setActive} 
+      />
 
       {/* AI Agent Activity Section */}
       <div className="bg-[#0B1624] border border-white/[0.08] rounded-3xl p-6 shadow-xl">

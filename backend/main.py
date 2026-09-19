@@ -4,7 +4,8 @@ import requests
 import re
 from datetime import datetime
 import pandas as pd 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -37,6 +38,16 @@ app = FastAPI(
     description="AI-powered Local Commerce Autopilot",
     version="1.0.0"
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    import traceback
+    print(f"[ERROR] Global exception on {request.method} {request.url}: {exc}")
+    traceback.print_exc()
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc) or "Internal Server Error"}
+    )
 
 def extract_target_from_goal(goal: str):
     match = re.search(
@@ -104,6 +115,22 @@ class MerchantLocationRequest(BaseModel):
     city: str
     latitude: float
     longitude: float
+
+
+class FestivalDemandRequest(BaseModel):
+    festival_name: str
+    location: str
+    merchant_type: str
+
+
+class FestivalMissionRequest(BaseModel):
+    festival_name: str
+    location: str
+    merchant_type: str
+    expected_demand: str = "High"
+    peak_period: str = "Peak festival period"
+    recommended_products: list[dict] = []
+    reason: str = ""
 # --------------------------------------------------
 # ROOT
 # --------------------------------------------------
@@ -392,6 +419,73 @@ def run_demand_radar(
         db=db,
         merchant_id=current_user.merchant_id
     )
+
+
+# --------------------------------------------------
+# FESTIVAL DEMAND RADAR ENDPOINTS
+# --------------------------------------------------
+
+@app.get("/api/radar/festival-options")
+def get_festival_options_endpoint():
+    from services.festival_service import get_festival_options
+    return get_festival_options()
+
+
+@app.post("/api/radar/festival-demand")
+def analyze_festival_demand_endpoint(
+    request: FestivalDemandRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    from services.festival_service import analyze_festival_demand
+    return analyze_festival_demand(
+        festival_name=request.festival_name,
+        location=request.location,
+        merchant_type=request.merchant_type,
+        db=db,
+        merchant_id=current_user.merchant_id
+    )
+
+
+@app.post("/api/missions/create-festival-mission")
+def create_festival_mission(
+    request: FestivalMissionRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    goal_text = f"Prepare inventory for {request.festival_name} demand in {request.location}."
+    plan = goal_planner.analyze_goal(goal_text)
+
+    # Format action plan steps
+    action_plan = [
+        f"1. Identify festival-relevant products for {request.festival_name}.",
+        f"2. Check current merchant inventory in {request.location}.",
+        "3. Identify inventory gaps and seasonal demand spikes.",
+        "4. Recommend reorder quantities & digital payment incentives.",
+        "5. Send inventory recommendation to Approval Center."
+    ]
+
+    mission = {
+        "goal": goal_text,
+        "goal_type": plan.get("goal_type", "inventory_planning"),
+        "target": plan.get("target"),
+        "deadline": request.peak_period or plan.get("deadline", "Peak Festival Window"),
+        "priority": "high",
+        "current_revenue": None,
+        "revenue_gap": None,
+        "status": "running",
+        "action_plan": action_plan,
+        "context": {
+            "festival": request.festival_name,
+            "location": request.location,
+            "merchant_type": request.merchant_type,
+            "expected_demand": request.expected_demand,
+            "peak_period": request.peak_period,
+            "reason": request.reason
+        }
+    }
+
+    return mission
 # --------------------------------------------------
 # OFFER + GUARDRAIL EVALUATION
 # --------------------------------------------------

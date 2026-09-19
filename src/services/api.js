@@ -258,6 +258,45 @@ export async function getDemandRadar() {
   return data;
 }
 
+export async function getFestivalOptions() {
+  const response = await fetch(`${API_URL}/api/radar/festival-options`);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Failed to fetch festival options");
+  return data;
+}
+
+export async function analyzeFestivalDemand(reqData) {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Authentication token not found.");
+  const response = await fetch(`${API_URL}/api/radar/festival-demand`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(reqData),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Failed to analyze festival demand");
+  return data;
+}
+
+export async function createFestivalMission(reqData) {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("Authentication token not found.");
+  const response = await fetch(`${API_URL}/api/missions/create-festival-mission`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(reqData),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.detail || "Failed to create festival mission");
+  return data;
+}
+
 export async function uploadSalesData(file) {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Authentication token not found. Please login again.");
